@@ -11,7 +11,8 @@ authors = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "numpy"
+    "numpy",
+    "matplotlib"
 ]
 
 [tool.setuptools.packages.find]

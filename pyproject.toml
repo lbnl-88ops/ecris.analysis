@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecris.analysis"
+description = "Analysis tools for various ECRIS projects."
+requires-python = ">=3.9"
+authors = [
+    {name = "Jessica Rehak", email = "rehak@lbl.gov"}
+]
+dynamic = ["version"]
+dependencies = [
+    "numpy"
+]
+
+[tool.setuptools.packages.find]
+where = [""]          # <-- change to [""] if you keep modules at the repo root
+include = ["ecris.analysis*"]
+exclude = ["tests*"]    # optional, keep test files out of the wheel
+
+[tool.setuptools.dynamic]
+version = {attr = "ecris.analysis.__version__"}

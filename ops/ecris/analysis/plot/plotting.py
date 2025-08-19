@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from ecris.analysis.model import CSD
+from ops.ecris.analysis.model import CSD
 
 def plot_csd(csd: CSD) -> Figure:
     if csd.m_over_q is None:

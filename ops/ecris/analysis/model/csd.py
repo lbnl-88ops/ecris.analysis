@@ -1,24 +1,23 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 
 class CSD:
     def __init__(self, data: np.ndarray, 
                  timestamp: str,
-                 settings: Dict[str, float]) -> None:
+                 settings: Optional[Dict[str, float]] = None) -> None:
         self.data = data
         self.settings = settings
         self.timestamp = timestamp
         self._m_over_q: np.ndarray | None = None
-        try:
-            self.settings['ht_oven_w'] = (
-                self.settings['ht_oven_i']
-                * self.settings['ht_oven_v']
-            )
-        except KeyError:
-            self.settings['ht_oven_w'] = -1
-
-
+        if self.settings is not None:
+            try:
+                self.settings['ht_oven_w'] = (
+                    self.settings['ht_oven_i']
+                    * self.settings['ht_oven_v']
+                )
+            except KeyError:
+                self.settings['ht_oven_w'] = -1
 
     @property
     def m_over_q(self) -> np.ndarray | None:

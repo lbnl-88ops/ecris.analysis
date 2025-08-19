@@ -4,8 +4,8 @@ from typing import List
 
 import numpy as np
 
-from ecris.analysis.model import CSD, Element
-from ecris.analysis.peaks import find_element_peaks, ElementPeaks
+from ops.ecris.analysis.model import CSD, Element
+from ops.ecris.analysis.peaks import find_element_peaks, ElementPeaks
 
 # measured approximate relation between the dipole hall probe 
 # measure [tesla] and M/Q: alpha = B_batman[tesla]/sqrt(M/Q * Vext[kV])

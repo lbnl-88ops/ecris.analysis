@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ecris.analysis.model import CSD, Element
+from ops.ecris.analysis.model import CSD, Element
 
 @dataclass
 class Peak:

@@ -90,28 +90,38 @@ def write_chunked(output: Path, df, interval="1d"):
             print(f"WARNING: Selection {start} to {stop} is empty")
     return time_chunks
 
-def convert_files(files: List[Path], output_path=Path("./data/venus")):
+def convert_venus_db_files(files: List[Path], output_path=Path("./data/venus"), 
+                           *, overwrite = False):
     column_names = union_of_column_names(files)
     column_names.add("time")
-    if output_path.exists():
-        shutil.rmtree(output_path)
-    output_path.mkdir()
+    skipped = 0
+    failed = 0
+    print(f"Converting {len(files)} files...")
+    output_path.mkdir(exist_ok=True)
     for file in files:
         if file.suffix == '.db':
-            print(f"Reading {file}")
-            df = read_full_db(file)
-            df = df.with_columns(time=pl.col(TIME_NAME).cast(pl.Float64) * 1e-3)
-            for k in column_names:
-                if k not in df:
-                    df = df.with_columns(pl.lit(np.nan).alias(k))
-                    print(f"WARNING: Adding column {k}")
-            for k in df.columns:
-                if k not in column_names:
-                    df = df.drop(k)
-                    print(f"WARNING: Removing column {k}")
-            filename = output_path / (file.stem + '.parquet')
-            print(f"Writing {filename}")
-            df.write_parquet(filename)
+            try:
+                filename = output_path / (file.stem + '.parquet')
+                if not overwrite and filename.exists():
+                    print(f"Skipping file, converted file {filename} already exists")
+                    skipped += 1
+                    continue
+                df = read_full_db(file)
+                df = df.with_columns(time=pl.col(TIME_NAME).cast(pl.Float64) * 1e-3)
+                for k in column_names:
+                    if k not in df:
+                        df = df.with_columns(pl.lit(np.nan).alias(k))
+                        print(f"WARNING: Adding column {k}")
+                for k in df.columns:
+                    if k not in column_names:
+                        df = df.drop(k)
+                        print(f"WARNING: Removing column {k}")
+                df.write_parquet(filename)
+            except BaseException as e:
+                print(f"Conversion failed: {e}")
+                failed += 1
+    print("File conversion complete." + (f" Skipped: {skipped}/{len(files)}." if skipped else "")
+          + (f" Failed: {failed}/{len(files)}." if failed else ""))
 
 def convert_directory(files: List[Path], output_path=Path("./data_full"), interval="1d"):
     all_times = []

@@ -28,9 +28,9 @@ _DATA_LABELS = OrderedDict(
         ],
         "Superconductor": [
             ("Injection I", "A", "inj_i"),
+            ("Middle I", "A", "mid_i"),
             ("Extraction I", "A", "ext_i"),
-            ("Mid I", "A", "mid_i"),
-            ("sext i", "A", "sext_i"),
+            ("Sextapole i", "A", "sext_i"),
         ],
         "High-Voltage": [
             ("Extraction V", "V", "extraction_v"),
@@ -59,11 +59,9 @@ _DATA_LABELS = OrderedDict(
             ("Inductive I", "A", "ind_oven_amps"),
             ("Inductive Power", "W", "ind_oven_watts")
         ],
-        "Gasses": [(gas, None, f"gas_balzer_{i}") 
-                   for i, gas in enumerate(["Cocktail O", "16 O", "17 O", "40 Ar", "36 Ar", 
-                                            "136 Xe", "124 Xe", "Xe", "78 Kr", "86 Kr", "Kr", 
-                                            "4 He", "3 He", "N", "21 Ne", "Ne" ])
-        ],
+        "Gasses": [(f"Gas Balzer {i + 1}", None, f"gas_balzer_{i}") 
+                   for i in range(16)
+                   ],
         "Misc": [
             ("Glaser", "A", "glaser_1"),
         ],

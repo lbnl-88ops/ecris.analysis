@@ -62,7 +62,7 @@ _DATA_LABELS = OrderedDict(
         "Gasses": [(gas, None, f"gas_balzer_{i}") 
                    for i, gas in enumerate(["Cocktail O", "16 O", "17 O", "40 Ar", "36 Ar", 
                                             "136 Xe", "124 Xe", "Xe", "78 Kr", "86 Kr", "Kr", 
-                                            "4 He", "3 He", "N", "21 Ne" "Ne" ])
+                                            "4 He", "3 He", "N", "21 Ne", "Ne" ])
         ],
         "Misc": [
             ("Glaser", "A", "glaser_1"),
@@ -75,5 +75,13 @@ DATA_LABELS = [
     for category, key_data_pairs in _DATA_LABELS.items()
     for data, units, key in key_data_pairs
 ]
+
+DATA_LABELS_IN_CATEGORIES = {
+    category: [
+        DataLabel(label=data, units=units, key=key)
+        for data, units, key in key_data_pairs
+    ]
+    for category, key_data_pairs in _DATA_LABELS.items()
+}
 
 DATA_LABELS_BY_KEY = {d.key: d for d in DATA_LABELS}

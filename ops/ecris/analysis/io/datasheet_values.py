@@ -11,7 +11,6 @@ class DataLabel:
     units: str | None
     key: str
 
-    @property
     def label_with_units(self, include_tag: bool = False) -> str:
         labels = [self.label]
 

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from ops.ecris.analysis import VenusDataError
+from ops.ecris.analysis.io.datasheet_values import GAS_NAMES
 
 _FILE_DATE_FORMAT = '%Y_%m_%d_%H_%M_%S'
 
@@ -43,6 +44,10 @@ def get_venus_data(path: Path, data_label: str | List[str], start: datetime, sto
     for label in data_labels:
         if label not in all_data.columns:
             raise VenusDataError(f'Data column {label} not present in data files.')
+
+    if any(d.startswith('gas_name_') for d in data_labels):
+        for d in [d for d in data_labels if d.startswith('gas_name_')]:
+            all_data[d] = all_data[d].apply(lambda x: GAS_NAMES[int(x)])
         
     all_data['time'] = all_data['time'].apply(datetime.fromtimestamp)
     return all_data[(start <= all_data['time']) & (all_data['time'] <= stop)].loc[:, data_labels]

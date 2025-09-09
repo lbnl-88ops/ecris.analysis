@@ -59,9 +59,11 @@ _DATA_LABELS = OrderedDict(
             ("Inductive I", "A", "ind_oven_amps"),
             ("Inductive Power", "W", "ind_oven_watts")
         ],
-        "Gasses": [(f"Gas Balzer {i + 1}", None, f"gas_balzer_{i}") 
-                   for i in range(16)
-                   ],
+        "Gasses": [entry for i in [1, 2, 5, 6, 7]
+                   for entry in [
+                    (f"Gas Balzer {i} setting", None, f"gas_balzer_{i}"),
+                    (f"Gas Balzer {i} gas", None, f"gas_name_{i}"),
+                   ]],
         "Misc": [
             ("Glaser", "A", "glaser_1"),
         ],
@@ -83,3 +85,9 @@ DATA_LABELS_IN_CATEGORIES = {
 }
 
 DATA_LABELS_BY_KEY = {d.key: d for d in DATA_LABELS}
+
+GAS_NAMES = {
+    0: 'Cocktail O', 1: '16 O', 2: '17 O', 3: '40 Ar', 4: '36 Ar',
+    5: '136 Xe', 6: '124 Xe', 7: 'Xe', 8: '78 Kr', 9: '86 Kr', 
+    10: 'Kr', 11: '4 He', 12: '3 He', 13: 'N', 14: '21 Ne', 15: 'Ne'
+}

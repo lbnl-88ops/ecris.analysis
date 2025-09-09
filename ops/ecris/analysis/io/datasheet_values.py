@@ -12,12 +12,14 @@ class DataLabel:
     key: str
 
     @property
-    def label_with_units(self) -> str:
-        if self.units is None:
-            return self.label
-        else:
-            return f"{self.label} ({self.units})"
+    def label_with_units(self, include_tag: bool = False) -> str:
+        labels = [self.label]
 
+        if self.units is not None:
+            labels.append(f'({self.units})')
+        if include_tag:
+            labels.append(f'[{self.key}]')
+        return ' '.join(labels)
 
 _DATA_LABELS = OrderedDict(
     {

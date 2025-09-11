@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 data/csds
 data/venus
+*.bak.npy

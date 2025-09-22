@@ -1,15 +1,22 @@
 """This module contains methods for calculating and improving
 M/Q values."""
 from typing import List
+from logging import getLogger
 
 import numpy as np
+import pandas as pd
 
 from ops.ecris.analysis.model import CSD, Element
 from ops.ecris.analysis.csd.peaks import find_element_peaks, ElementPeaks
 
+_log = getLogger(__name__)
+
 # measured approximate relation between the dipole hall probe 
 # measure [tesla] and M/Q: alpha = B_batman[tesla]/sqrt(M/Q * Vext[kV])
-_ALPHA: float = 0.00824
+ALPHA_DF = pd.DataFrame.from_dict(
+    {'time': ["2000-01-01 00:00:00", "2025-09-22 02:56:00"],
+     'alpha': [0.00824, 0.00607]})
+ALPHA_DF['time'] = pd.to_datetime(ALPHA_DF['time'])
 
 def scale_with_oxygen(csd: CSD) -> None:
     csd.m_over_q = estimate_m_over_q(csd)
@@ -23,7 +30,13 @@ def estimate_m_over_q(csd: CSD) -> np.ndarray:
     :return: array containing values of M/Q that align with the CSD arrays
     :rtype: np.ndarray
     """
-    return csd.dipole_field*csd.dipole_field/_ALPHA/_ALPHA/csd.extraction_voltage
+    alpha_idx = ALPHA_DF['time'].searchsorted(csd.timestamp)
+    try:
+        alpha = ALPHA_DF['alpha'][alpha_idx - 1]
+    except KeyError:
+        _log.error('No valid alpha for this CSD timestamp.')
+        raise KeyError
+    return csd.dipole_field*csd.dipole_field/alpha/alpha/csd.extraction_voltage
 
 def rescale_m_over_q(m_over_q: np.ndarray, 
                      peaks: ElementPeaks) -> np.ndarray: 

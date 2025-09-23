@@ -15,7 +15,7 @@ _log = getLogger(__name__)
 # measure [tesla] and M/Q: alpha = B_batman[tesla]/sqrt(M/Q * Vext[kV])
 ALPHA_DF = pd.DataFrame.from_dict(
     {'time': ["2000-01-01 00:00:00", "2025-09-22 02:56:00"],
-     'alpha': [0.00824, 0.00607]})
+     'alpha': [0.00824, 0.01118]})
 ALPHA_DF['time'] = pd.to_datetime(ALPHA_DF['time'])
 
 def scale_with_oxygen(csd: CSD) -> None:
@@ -33,6 +33,7 @@ def estimate_m_over_q(csd: CSD) -> np.ndarray:
     alpha_idx = ALPHA_DF['time'].searchsorted(csd.timestamp)
     try:
         alpha = ALPHA_DF['alpha'][alpha_idx - 1]
+        _log.debug(f'{alpha=} based on {csd.timestamp=}')
     except KeyError:
         _log.error('No valid alpha for this CSD timestamp.')
         raise KeyError

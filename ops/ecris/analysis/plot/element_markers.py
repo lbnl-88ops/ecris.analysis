@@ -8,7 +8,10 @@ from ops.ecris.analysis.model import Element
 
 
 def plot_element_markers(
-    element: Element, marker: str, fraction_y: float | None = None
+    element: Element,
+    marker: str = "v",
+    fraction_y: float = 0.5,
+    x_space_required: int = 35,
 ):
     ax = plt.gca()
     labels = []
@@ -18,8 +21,11 @@ def plot_element_markers(
     q_values = list(compress(q_values, mask))
     m_over_q = list(compress(m_over_q, mask))
     y_min, y_max = ax.get_ylim()
+    x_min, x_max = ax.get_xlim()
     height = y_max * fraction_y
-    offset = 0.02 * abs(y_max - y_min)
+    y_offset = 0.02 * abs(y_max - y_min)
+    x_min = ax.transData.transform((x_min, 0))[0]
+    x_max = ax.transData.transform((x_max, 0))[0]
     new_system_loc = ax.transData.transform((0, height))
     new_axes_loc = ax.transAxes.inverted().transform(new_system_loc)
     label_height = new_axes_loc[1]
@@ -32,19 +38,30 @@ def plot_element_markers(
         markeredgecolor="black",
         animated=True,
     )
+
+    last_visible = None
     for x, q in zip(m_over_q, q_values):
-        txt = ax.text(
-            x,
-            height + offset,
-            f"{q}",
-            animated=True,
-            c="black",
-            ha="center",
-            va="bottom",
-            weight="bold",
-            clip_on=True,
-        )
-        labels.append(txt)
+        artist_loc = ax.transData.transform((x, 0))[0]
+        if x_min < artist_loc < x_max:
+            if (
+                last_visible is not None
+                and abs(artist_loc - last_visible) < x_space_required
+            ):
+                continue
+            last_visible = artist_loc
+
+            txt = ax.text(
+                x,
+                height + y_offset,
+                f"{q}",
+                animated=True,
+                c="black",
+                ha="center",
+                va="bottom",
+                weight="bold",
+                clip_on=True,
+            )
+
     element_artist = ax.text(
         1.01,
         label_height,

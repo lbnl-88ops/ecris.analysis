@@ -6,12 +6,15 @@ from matplotlib.markers import MarkerStyle
 
 from ops.ecris.analysis.model import Element
 
+_MARKER_DEFAULTS = {"marker": "v", "markeredgecolor": "black", "ls": "", "ms": 10}
+
 
 def plot_element_markers(
     element: Element,
-    marker: str = "v",
     fraction_y: float = 0.5,
     x_space_required: int = 35,
+    draw_lines: bool = False,
+    **kwargs,
 ):
     ax = plt.gca()
     labels = []
@@ -29,16 +32,18 @@ def plot_element_markers(
     new_system_loc = ax.transData.transform((0, height))
     new_axes_loc = ax.transAxes.inverted().transform(new_system_loc)
     label_height = new_axes_loc[1]
+    for keyword, setting in _MARKER_DEFAULTS.items():
+        if keyword not in kwargs:
+            kwargs[keyword] = setting
     (ln,) = ax.plot(
         m_over_q,
         [height] * len(m_over_q),
-        marker=marker,
-        ms=10,
-        ls="",
-        markeredgecolor="black",
         animated=True,
+        **kwargs,
     )
-
+    if draw_lines:
+        for x in m_over_q:
+            ax.axvline(x, ls="--", alpha=0.25, c=ln.get_color())
     last_visible = None
     for x, q in zip(m_over_q, q_values):
         artist_loc = ax.transData.transform((x, 0))[0]

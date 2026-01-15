@@ -23,6 +23,8 @@ def polynomial_fit_mq(
     polynomial_order: int = 3,
     linear_bounds: Optional[Tuple[float, float]] = None,
     nonlinear_bounds: Tuple[float, float] = (-1, 1),
+    max_iterations: int = 1000,
+    max_function_evaluations: Optional[int] = None,
 ) -> Tuple[np.ndarray, opt.OptimizeResult]:
     if polynomial_order < 1:
         raise RuntimeError("Polynomial order must be at least linear")
@@ -61,6 +63,8 @@ def polynomial_fit_mq(
     else:
         lb = linear_bounds
     bounds = [sb, lb] + [sb] * (polynomial_order - 2)
-    sol = opt.direct(residual, bounds)
+    sol = opt.direct(
+        residual, bounds, maxfun=max_function_evaluations, maxiter=max_iterations
+    )
     poly = Legendre(sol.x)
     return poly(estimated_m_over_q), sol

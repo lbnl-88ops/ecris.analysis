@@ -25,6 +25,8 @@ def polynomial_fit_mq(
     nonlinear_bounds: Tuple[float, float] = (-1, 1),
     max_iterations: int = 1000,
     max_function_evaluations: Optional[int] = None,
+    optimize_on_failure: bool = False,
+    always_optimize: bool = False,
 ) -> Tuple[np.ndarray, opt.OptimizeResult]:
     if polynomial_order < 1:
         raise RuntimeError("Polynomial order must be at least linear")
@@ -54,7 +56,7 @@ def polynomial_fit_mq(
             return 0
         if x_mapping[-1] > 10:
             return 0
-        shifted_signal = np.interp(x, x_mapping, signal)
+        shifted_signal = np.interp(x, x_mapping, signal) / np.max(signal)
         return -float(np.correlate(template, shifted_signal)[0])
 
     sb = nonlinear_bounds
@@ -64,7 +66,13 @@ def polynomial_fit_mq(
         lb = linear_bounds
     bounds = [sb, lb] + [sb] * (polynomial_order - 2)
     sol = opt.direct(
-        residual, bounds, maxfun=max_function_evaluations, maxiter=max_iterations
+        residual,
+        bounds,
+        maxfun=max_function_evaluations,
+        maxiter=max_iterations,
+        locally_biased=False,
     )
+    if always_optimize or (optimize_on_failure and not sol.success):
+        sol = opt.minimize(residual, sol.x, bounds=bounds, method="Nelder-Mead")
     poly = Legendre(sol.x)
     return poly(estimated_m_over_q), sol

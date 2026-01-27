@@ -8,7 +8,7 @@ import scipy.optimize as opt
 from scipy.signal import find_peaks
 
 from ops.ecris.analysis.model import CSD, Element
-from .m_over_q import estimate_m_over_q
+from ops.ecris.analysis.csd.m_over_q import estimate_m_over_q
 
 
 def default_polynomial_fit(csd: CSD) -> Tuple[np.ndarray, opt.OptimizeResult]:
@@ -38,31 +38,27 @@ def polynomial_fit_mq(
     estimated_m_over_q = estimated_m_over_q - h_loc
 
     max_x = int(np.max(estimated_m_over_q))
-    x = np.linspace(0, max_x, 1000)
     _, unique_mask = np.unique(estimated_m_over_q, return_index=True)
     signal_x = estimated_m_over_q[unique_mask]
     signal = csd.beam_current[unique_mask]
 
-    mq = np.linspace(0, max_x, 1000)
     q_values = [e.atomic_number for e in elements]
     m_values = [e.atomic_mass for e in elements]
-    template = np.zeros_like(mq)
-    for m, q_max in zip(m_values, q_values):
-        for v in [m / q - h_loc for q in range(1, q_max + 1) if m / q < max_x]:
-            i = np.argmin(np.abs(mq - v))
-            template[i] = 100
 
     def residual(P):
         polynomial = Legendre([0, *P], window=[0, max_x], domain=[0, max_x])
-        x_mapping = polynomial(signal_x)
-        if not np.all(np.diff(x_mapping) > 0):
-            return 0
-        if not np.all(x_mapping > -1):
-            return 0
-        if x_mapping[-1] > 10:
-            return 0
-        shifted_signal = np.interp(x, x_mapping, signal)
-        return -float(np.correlate(template, shifted_signal)[0])
+        template = np.zeros_like(signal_x)
+        penalty = 0
+        for m, q_max in zip(m_values, q_values):
+            for v in [m / q - h_loc for q in range(1, q_max + 1) if m / q < max_x]:
+                v_x = polynomial(v)
+                if v_x > 10:
+                    penalty += v_x - 10
+                elif v_x < 0:
+                    penalty += np.abs(v_x)
+                i = np.argmin(np.abs(signal_x - polynomial(v)))
+                template[i] = 100
+        return -float(np.correlate(template, signal)[0]) + 1e4 * penalty**2
 
     sb = nonlinear_bounds
     lb = linear_bounds
@@ -78,4 +74,7 @@ def polynomial_fit_mq(
     if always_optimize or (optimize_on_failure and not sol.success):
         sol = opt.minimize(residual, sol.x, bounds=bounds, method="Nelder-Mead")
     poly = Legendre([0, *sol.x])
-    return poly(estimated_m_over_q) + h_loc, sol
+    fine_mq = np.linspace(0, max_x, 10000)
+    fit_x_mapping = poly(fine_mq)
+    x_to_mq_interp = np.interp(estimated_m_over_q, fit_x_mapping, fine_mq)
+    return x_to_mq_interp + h_loc, sol

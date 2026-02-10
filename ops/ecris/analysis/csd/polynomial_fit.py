@@ -52,8 +52,8 @@ def polynomial_fit_mq(
         for m, q_max in zip(m_values, q_values):
             for v in [m / q - h_loc for q in range(1, q_max + 1) if m / q < max_x]:
                 v_x = polynomial(v)
-                if v_x > 10:
-                    penalty += v_x - 10
+                if v_x > max_x:
+                    penalty += v_x - max_x
                 elif v_x < 0:
                     penalty += np.abs(v_x)
                 i = np.argmin(np.abs(signal_x - polynomial(v)))

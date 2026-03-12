@@ -1,4 +1,6 @@
 import dataclasses
+import datetime as dt
+import logging
 from pathlib import Path
 from typing import Tuple, Dict, Any, Union
 
@@ -7,11 +9,28 @@ import numpy as np
 
 from ops.ecris.operations.emittance_scan.parameters import LinearScanParameters
 from ops.ecris.devices.motor_controller_specification import Axis
+from ops.ecris.analysis.model.emittance_scan import EmittanceScan
+
+DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
 
-def load_emittance_scan(
-    filepath: Union[str, Path],
-) -> Tuple[np.ndarray, LinearScanParameters, Dict[str, Any]]:
+def _file_raw_timestamp(file: Path) -> float | None:
+    try:
+        return float(file.stem[-10:])
+    except BaseException as e:
+        logging.info(f"Failed to parse timestamp for file {file}: {e}")
+        return None
+
+
+def _file_formatted_timestamp(file: Path) -> str:
+    raw_timestamp = _file_raw_timestamp(file)
+    if raw_timestamp is not None:
+        return dt.datetime.fromtimestamp(raw_timestamp).strftime(DATETIME_FORMAT)
+    else:
+        return "UNKNOWN"
+
+
+def load_emittance_scan(filepath: Union[str, Path]) -> EmittanceScan:
     filepath = Path(filepath)
     if not filepath.exists():
         raise FileNotFoundError(f"Scan file not found: {filepath}")
@@ -22,6 +41,8 @@ def load_emittance_scan(
         dataset = f["scan_data"]
         data = dataset[:]
         raw_attrs = dict(dataset.attrs)
+
+    timestamp = _file_raw_timestamp(filepath)
 
     param_fields = {field.name for field in dataclasses.fields(LinearScanParameters)}
 
@@ -35,7 +56,6 @@ def load_emittance_scan(
         if key == "axis" and isinstance(value, str):
             try:
                 value = Axis[value]
-                print(value)
             except KeyError:
                 pass
 
@@ -46,4 +66,9 @@ def load_emittance_scan(
 
     parameters = LinearScanParameters(**constructor_args)
 
-    return data, parameters, extra_metadata
+    return EmittanceScan(
+        data=data,
+        scan_parameters=parameters,
+        timestamp=timestamp,
+        extra_metadata=extra_metadata if extra_metadata else None,
+    )

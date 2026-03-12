@@ -8,6 +8,7 @@ from ops.ecris.devices.motor_controller_specification import Axis
 
 @dataclass
 class RMSEmittance:
+    data: np.ndarray
     axis: Axis
     x: np.ndarray
     xp: np.ndarray
@@ -43,4 +44,4 @@ def calculate_rms_emittance(emittance_scan: EmittanceScan) -> RMSEmittance:
     alpha = -sigma_xxp / e_rms
     beta = sigma_x_2 / e_rms
     gamma = sigma_xp_2 / e_rms
-    return RMSEmittance(axis, x, xp, x_mean, xp_mean, alpha, beta, gamma, e_rms)
+    return RMSEmittance(data, axis, x, xp, x_mean, xp_mean, alpha, beta, gamma, e_rms)

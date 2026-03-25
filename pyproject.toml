@@ -1,15 +1,15 @@
 [build-system]
-requires = ["setuptools >= 77.0.3", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "ops.ecris.analysis"
 description = "Analysis tools for various ECRIS projects."
-requires-python = ">=3.9"
+version = "1.4.2"
+requires-python = ">=3.11"
 authors = [
     {name = "Jessica Rehak", email = "rehak@lbl.gov"}
 ]
-dynamic = ["version"]
 dependencies = [
     "numpy",
     "matplotlib",
@@ -19,17 +19,57 @@ dependencies = [
     "polars",
     "connectorx",
     "pyarrow",
+    "h5py (>=3.15.1,<4.0.0)",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest",
+[tool.poetry]
+packages = [ { include = "ops/ecris/analysis" } ]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+ruff = "*"
+pyright = "*"
+
+[tool.pytest.ini_options]
+pythonpath = [ 
+    "." 
+    ]
+addopts = [
+    "--cov=ops/ecris",
+    "--cov-report=term-missing", 
+    "--cov-report=xml",          
 ]
 
-[tool.setuptools.packages.find]
-where = [""]          # <-- change to [""] if you keep modules at the repo root
-include = ["ops.ecris.analysis*"]
-exclude = ["tests*"]    # optional, keep test files out of the wheel
+# Tool settings
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "dist",
+    "build",
+]
+src = ["."]
 
-[tool.setuptools.dynamic]
-version = {attr = "ops.ecris.analysis.__version__"}
+[tool.ruff.lint]
+select = ["E", "W", "F", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ops.ecris.analysis"]
+
+[tool.pyright]
+reportUnusedImports = "none"
+pythonVersion = "3.11"
+exclude = [
+    ".git",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "dist",
+    "build",
+]

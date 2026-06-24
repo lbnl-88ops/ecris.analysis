@@ -25,11 +25,7 @@ def calculate_rms_emittance(emittance_scan: EmittanceScan) -> RMSEmittance:
     xp = emittance_scan.divergence_range
     axis = emittance_scan.scan_parameters.axis
 
-    data = emittance_scan.data.clip(0)
-    if data.shape != (len(x), len(xp)):
-        data = data.T
-        if data.shape != (len(x), len(xp)):
-            raise RuntimeError
+    data = emittance_scan.data.clip(0).T
 
     x_mean = np.einsum("ij,i->", data, x * 1e-3) / np.sum(data)
     xp_mean = np.einsum("ij,j->", data, xp * 1e-3) / np.sum(data)

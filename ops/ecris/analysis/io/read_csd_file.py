@@ -36,7 +36,10 @@ def read_csd_from_file_pair(csd_file: Path) -> CSD:
             with open(datasheet, 'r') as f:
                 for setting in f.readlines():
                     _, value, name = setting.split()
-                    settings[name] = float(value)
+                    try:
+                        settings[name] = float(value)
+                    except ValueError:
+                        settings[name] = value
         except BaseException as e:
             logging.error(f'Error reading datasheet file: {e}')
     return CSD(data=data, timestamp=timestamp, settings=settings)

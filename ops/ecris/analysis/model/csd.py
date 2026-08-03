@@ -1,11 +1,11 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import numpy as np
 
 class CSD:
     def __init__(self, data: np.ndarray, 
                  timestamp: str,
-                 settings: Optional[Dict[str, float]] = None) -> None:
+                 settings: Optional[Dict[str, Any]] = None) -> None:
         self.data = data
         self.settings = settings
         self.timestamp = timestamp
